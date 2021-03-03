@@ -9,12 +9,12 @@
 Config 				  = {}
 Config.Cooldowns = {
 	["police"] = {
-		light = 700,
-		heavy = 1200
+		light = 2000,
+		heavy = 2500
 	},
 	["civilian"] = {
-		light = 1000,
-		heavy = 1350
+		light = 2000,
+		heavy = 2500
 	}
 }
 
