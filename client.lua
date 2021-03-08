@@ -43,7 +43,7 @@ function checkHolsters()
 		while true do
 			Citizen.Wait(10)
 			local ped = PlayerPedId()
-			if PlayerData.job.name == 'police' or PlayerData.job.name == 'government' then
+			if PlayerData.job.name == 'ehm' or PlayerData.job.name == 'ehm' then -- Inke gun dar avordan PD ba ye adam mamoli farq dare kirie
 				if not IsPedInAnyVehicle(ped, false) then
 					if GetVehiclePedIsTryingToEnter (ped) == 0 and IsPedInParachuteFreeFall(ped) == false then
 						local weapon = CheckWeapon(ped)

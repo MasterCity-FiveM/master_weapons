@@ -28,6 +28,7 @@ Config.Weapons = {
 	[GetHashKey("WEAPON_SNSPISTOL")] = "light",
 	[GetHashKey("WEAPON_SNSPISTOL_MK2")] = "light",
 	[GetHashKey("WEAPON_HEAVYPISTOL")] = "light",
+	[GetHashKey("WEAPON_APPISTOL")] = "light",
 	-- SMGs
 	[GetHashKey("WEAPON_MICROSMG")] = "light",
 	[GetHashKey("WEAPON_MINISMG")] = "light",
