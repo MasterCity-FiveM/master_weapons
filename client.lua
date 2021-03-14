@@ -1,18 +1,9 @@
-----------------------------------------------------------------
--- Copyright © 2019 by Guy Shefer
--- Made By: Guy293
--- GitHub: https://github.com/Guy293
--- Fivem Forum: https://forum.fivem.net/u/guy293/
--- Tweaked by: Campinchris
-----------------------------------------------------------------
-
+--------------------------------------
 --- DO NOT EDIT THIS --
 local ESX      	 = nil
-local holstered  = true
-local blocked	 = false
-local PlayerData = {}
+local PlayerData, attached_weapons = {}, {}
 local lastWeapon
-local BlockWheel = false
+local blocked, BlockWheel, hasBag, holstered = false, false, false, true
 ------------------------
 
 Citizen.CreateThread(function()
@@ -43,126 +34,85 @@ function checkHolsters()
 		while true do
 			Citizen.Wait(10)
 			local ped = PlayerPedId()
-			if PlayerData.job.name == 'ehm' or PlayerData.job.name == 'ehm' then -- Inke gun dar avordan PD ba ye adam mamoli farq dare kirie
-				if not IsPedInAnyVehicle(ped, false) then
-					if GetVehiclePedIsTryingToEnter (ped) == 0 and IsPedInParachuteFreeFall(ped) == false then
-						local weapon = CheckWeapon(ped)
-						if weapon then
-							lastWeapon = weapon
-							if holstered then
-								blocked  = true
-								if weapon == "light" then
-									loadAnimDict("reaction@intimidation@cop@unarmed")
-									TaskPlayAnim(ped, "reaction@intimidation@cop@unarmed", "intro", 8.0, 2.0, -1, 50, 2.0, 0, 0, 0 ) -- Change 50 to 30 if you want to stand still when removing weapon
-									Citizen.Wait(Config.Cooldowns.police.light)
-									loadAnimDict("rcmjosh4")
-									TaskPlayAnim(ped, "rcmjosh4", "josh_leadout_cop2", 8.0, 2.0, -1, 48, 10, 0, 0, 0 )
-									Citizen.Wait(400)
-									ClearPedTasks(ped)
-									holstered = false
-								else
-									loadAnimDict("anim@heists@ornate_bank@grab_cash")
-									TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "intro", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
-									Citizen.Wait(Config.Cooldowns.police.heavy)
-									ClearPedTasks(ped)
-									holstered = false
-								end
-									
-							else
-								blocked = false
-							end
-	
-						else
-							if not holstered then
-								if lastWeapon == "heavy" then
-									BlockWheel = true
-									loadAnimDict("anim@heists@ornate_bank@grab_cash")
-									TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "exit", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
-									Citizen.Wait(Config.Cooldowns.police.heavy)
-									ClearPedTasks(ped)
-									holstered = true
-									BlockWheel = false
-								else
-									BlockWheel = true
-									TaskPlayAnim(ped, "rcmjosh4", "josh_leadout_cop2", 8.0, 2.0, -1, 48, 10, 0, 0, 0 )
-									Citizen.Wait(Config.Cooldowns.police.light)
-									TaskPlayAnim(ped, "reaction@intimidation@cop@unarmed", "outro", 8.0, 2.0, -1, 50, 2.0, 0, 0, 0 ) -- Change 50 to 30 if you want to stand still when holstering weapon
-									Citizen.Wait(60)
-									ClearPedTasks(ped)
-									holstered = true
-									BlockWheel = false
-								end
-							end
-						end
-	
-					else
-						SetCurrentPedWeapon(ped, GetHashKey("WEAPON_UNARMED"), true)
+			
+			if not hasBag then
+				for wep_hash, wep_name in pairs(Config.Weapons) do
+					if wep_hash ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not attached_weapons[wep_name] then
+						AttachWeapon(wep_name, wep_hash, Config.AtWeap.back_bone, Config.AtWeap.x, Config.AtWeap.y, Config.AtWeap.z, Config.AtWeap.x_rotation, Config.AtWeap.y_rotation, Config.AtWeap.z_rotation, isMeleeWeapon(wep_name))
 					end
-				else
-					holstered = true
 				end
-			else
-				if not IsPedInAnyVehicle(ped, false) then
-					if GetVehiclePedIsTryingToEnter (ped) == 0 and not IsPedInParachuteFreeFall (ped) then
-						local weapon = CheckWeapon(ped)
-						if weapon then
-							lastWeapon = weapon
-							if holstered then
-								blocked   = true
-								if weapon == "light" then
-									loadAnimDict("reaction@intimidation@1h")
-									TaskPlayAnim(ped, "reaction@intimidation@1h", "intro", 5.0, 1.0, -1, 50, 0, 0, 0, 0 )
-									Citizen.Wait(Config.Cooldowns.civilian.light)
-									ClearPedTasks(ped)
-									holstered = false
-								else
-									loadAnimDict("anim@heists@ornate_bank@grab_cash")
-									TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "intro", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
-									Citizen.Wait(Config.Cooldowns.civilian.heavy)
-									ClearPedTasks(ped)
-									holstered = false
-								end
-									
+			end
+			
+			for name, attached_object in pairs(attached_weapons) do
+				if hasBag or GetSelectedPedWeapon(ped) ==  attached_object.hash or not HasPedGotWeapon(ped, attached_object.hash, false) then -- equipped or not in weapon wheel
+					DeleteObject(attached_object.handle)
+					attached_weapons[name] = nil
+				end
+			end
+			
+			if not IsPedInAnyVehicle(ped, false) then
+				if GetVehiclePedIsTryingToEnter(ped) == 0 and not IsPedInParachuteFreeFall(ped) then
+					local weapon = CheckWeapon(ped)
+					if weapon then
+						lastWeapon = weapon
+						if holstered then
+							blocked   = true
+							disableActions()
+							if weapon == "light" then
+								loadAnimDict("reaction@intimidation@1h")
+								TaskPlayAnim(ped, "reaction@intimidation@1h", "intro", 5.0, 1.0, -1, 50, 0, 0, 0, 0 )
+								Citizen.Wait(2000)
+								ClearPedTasks(ped)
 								holstered = false
 							else
-								blocked = false
+								loadAnimDict("anim@heists@ornate_bank@grab_cash")
+								TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "intro", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
+								Citizen.Wait(2500)
+								ClearPedTasks(ped)
+								holstered = false
 							end
+								
+							holstered = false
 						else
-							if not holstered then
-								if lastWeapon == "heavy" then
-									BlockWheel = true
-									loadAnimDict("anim@heists@ornate_bank@grab_cash")
-									TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "exit", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
-									Citizen.Wait(Config.Cooldowns.civilian.heavy)
-									ClearPedTasks(ped)
-									holstered = true
-									BlockWheel = false
-								else
-									BlockWheel = true
-									loadAnimDict("reaction@intimidation@1h")
-									TaskPlayAnim(ped, "reaction@intimidation@1h", "outro", 8.0, 3.0, -1, 50, 0, 0, 0.125, 0 ) -- Change 50 to 30 if you want to stand still when holstering weapon
-									Citizen.Wait(Config.Cooldowns.civilian.light)
-									ClearPedTasks(ped)
-									holstered = true
-									BlockWheel = false
-								end
-							end
+							blocked = false
 						end
 					else
-						SetCurrentPedWeapon(ped, GetHashKey("WEAPON_UNARMED"), true)
+						if not holstered then
+							if lastWeapon ~= "light" then
+								BlockWheel = true
+								disableActions()
+								loadAnimDict("anim@heists@ornate_bank@grab_cash")
+								TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "exit", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
+								Citizen.Wait(2500)
+								ClearPedTasks(ped)
+								holstered = true
+								BlockWheel = false
+							else
+								BlockWheel = true
+								disableActions()
+								loadAnimDict("reaction@intimidation@1h")
+								TaskPlayAnim(ped, "reaction@intimidation@1h", "outro", 8.0, 3.0, -1, 50, 0, 0, 0.125, 0 ) -- Change 50 to 30 if you want to stand still when holstering weapon
+								Citizen.Wait(2000)
+								ClearPedTasks(ped)
+								holstered = true
+								BlockWheel = false
+							end
+						end
 					end
 				else
-					holstered = true
+					SetCurrentPedWeapon(ped, GetHashKey("WEAPON_UNARMED"), true)
 				end
+			else
+				holstered = true
 			end
 		end
 	end)
 end
 
-Citizen.CreateThread(function()
-	while true do
-		Citizen.Wait(5)
-		if blocked then
+function disableActions()
+	Citizen.CreateThread(function()
+		while blocked or BlockWheel do
+			Citizen.Wait(5)
 			DisableControlAction(1, 25, true)
 			DisableControlAction(1, 140, true)
 			DisableControlAction(1, 141, true)
@@ -170,23 +120,23 @@ Citizen.CreateThread(function()
 			DisableControlAction(1, 23, true)
 			DisableControlAction(1, 37, true) -- Disables INPUT_SELECT_WEAPON (TAB)
 			DisablePlayerFiring(ped, true) -- Disable weapon firing
-		else
-			Citizen.Wait(500)
 		end
-	end
-end)
+	end)
+end
 
 Citizen.CreateThread(function()
 	while true do
-		Citizen.Wait(5)
-		if BlockWheel then
-			DisableControlAction(1, 37, true) -- Disables INPUT_SELECT_WEAPON (TAB)
-		else
-			Citizen.Wait(500)
-		end
+		TriggerEvent('skinchanger:getSkin', function(skin)
+			if skin['bags_1'] ~= nil and (skin['bags_1'] >= 40 and skin['bags_1'] <= 47) then
+				hasBag = true
+			else
+				hasBag = false
+			end
+		end)
+			
+		Citizen.Wait(15000)
 	end
 end)
-
 
 function CheckWeapon(ped)
 	if IsEntityDead(ped) then
@@ -203,4 +153,35 @@ function loadAnimDict(dict)
 		RequestAnimDict(dict)
 		Citizen.Wait(0)
 	end
+end
+
+function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, isMelee)
+	local bone = GetPedBoneIndex(GetPlayerPed(-1), boneNumber)
+	RequestModel(attachModel)
+	
+	while not HasModelLoaded(attachModel) do
+		Wait(100)
+	end
+
+  attached_weapons[attachModel] = {
+    hash = modelHash,
+    handle = CreateObject(GetHashKey(attachModel), 1.0, 1.0, 1.0, true, true, false)
+  }
+
+  if isMelee then x = 0.11 y = -0.14 z = 0.0 xR = -75.0 yR = 185.0 zR = 92.0 end -- reposition for melee items
+  if attachModel == "prop_ld_jerrycan_01" then x = x + 0.3 end
+
+  AttachEntityToEntity(attached_weapons[attachModel].handle, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, 0, 2, 1)
+end
+
+function isMeleeWeapon(wep_name)
+    if wep_name == "prop_golf_iron_01" then
+        return true
+    elseif wep_name == "w_me_bat" then
+        return true
+    elseif wep_name == "prop_ld_jerrycan_01" then
+      return true
+    else
+        return false
+    end
 end
