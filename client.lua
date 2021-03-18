@@ -150,7 +150,9 @@ function checkHolsters()
 				end
 			else
 				holstered = true
-				DeleteObject(attached_weapons.handle)
+				if attached_weapons ~= nil then
+					DeleteObject(attached_weapons.handle)
+				end
 				attached_weapons = nil
 				lastBackWeapon = 1
 			end
