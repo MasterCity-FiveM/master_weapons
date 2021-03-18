@@ -39,6 +39,10 @@ Config.Weapons = {
     [GetHashKey("WEAPON_HOMINGLAUNCHER")] = "w_lr_homing", -- w_lr_homing & w_lr_homing_rocket
 }
 
+Config.ColorsWeapons = {
+    [GetHashKey("WEAPON_ASSAULTRIFLE") .. "_4"] = "w_ar_assaultrifle_luxe",
+}
+
 Config.AtWeap = {
 	back_bone = 24816,
     x = 0.075,

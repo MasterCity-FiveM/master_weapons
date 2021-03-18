@@ -4,6 +4,7 @@ local ESX      	 = nil
 local PlayerData, attached_weapons = {}, nil
 local lastWeapon
 local blocked, BlockWheel, hasBag, holstered = false, false, false, true
+local lastBackWeapon = 1
 ------------------------
 
 Citizen.CreateThread(function()
@@ -50,18 +51,25 @@ function checkHolsters()
 			if not hasBag and not IsPedInAnyVehicle(ped, false) then
 				for wep_hash, wep_name in pairs(Config.Weapons) do
 					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) then
+						if lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash then
+							break
+						end
+						
 						if attached_weapons ~= nil then
 							DeleteObject(attached_weapons.handle)
 							attached_weapons = nil
+							lastBackWeapon = 1
 						end
 						AttachWeapon(wep_name, wep_hash, Config.AtWeap.back_bone, Config.AtWeap.x, Config.AtWeap.y, Config.AtWeap.z, Config.AtWeap.x_rotation, Config.AtWeap.y_rotation, Config.AtWeap.z_rotation, isMeleeWeapon(wep_name))
+						break
 					end
 				end
 			end
 			
-			if attached_weapons ~= nil and (hasBag or GetSelectedPedWeapon(ped) ==  attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
+			if attached_weapons ~= nil and (hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
 				DeleteObject(attached_weapons.handle)
 				attached_weapons = nil
+				lastBackWeapon = 1
 			end
 			
 			if not IsPedInAnyVehicle(ped, false) then
@@ -144,6 +152,7 @@ function checkHolsters()
 				holstered = true
 				DeleteObject(attached_weapons.handle)
 				attached_weapons = nil
+				lastBackWeapon = 1
 			end
 		end
 	end)
@@ -208,17 +217,24 @@ function loadAnimDict(dict)
 end
 
 function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, isMelee)
+	local ped = PlayerPedId()
 	local bone = GetPedBoneIndex(GetPlayerPed(-1), boneNumber)
+	local WeaponColor = GetPedWeaponTintIndex(ped, modelHash)
+	if WeaponColor ~= nil and WeaponColor ~= 0 and Config.ColorsWeapons[modelHash .. "_" .. WeaponColor] ~= nil then
+		attachModel = Config.ColorsWeapons[modelHash .. "_" .. WeaponColor]
+	end
+
 	RequestModel(attachModel)
 	while not HasModelLoaded(attachModel) do
 		Wait(100)
 	end
-
+	
   attached_weapons = {
     hash = modelHash,
     handle = CreateObject(GetHashKey(attachModel), 1.0, 1.0, 1.0, true, true, false)
   }
 
+  lastBackWeapon = modelHash
   if isMelee then x = 0.11 y = -0.14 z = 0.0 xR = -75.0 yR = 185.0 zR = 92.0 end -- reposition for melee items
   if attachModel == "prop_ld_jerrycan_01" then x = x + 0.3 end
 
