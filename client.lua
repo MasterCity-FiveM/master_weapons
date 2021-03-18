@@ -1,7 +1,7 @@
 --------------------------------------
 --- DO NOT EDIT THIS --
 local ESX      	 = nil
-local PlayerData, attached_weapons = {}, {}
+local PlayerData, attached_weapons = {}, nil
 local lastWeapon
 local blocked, BlockWheel, hasBag, holstered = false, false, false, true
 ------------------------
@@ -18,7 +18,20 @@ Citizen.CreateThread(function()
 
 	PlayerData = ESX.GetPlayerData()
 	checkHolsters()
+	CheckPlayerHasBag()
+	Citizen.Wait(60000)
+	CheckPlayerHasBag()
 end)
+
+function CheckPlayerHasBag()
+	TriggerEvent('skinchanger:getSkin', function(skin)
+		if skin['bags_1'] ~= nil and (skin['bags_1'] >= 40 and skin['bags_1'] <= 47) then
+			hasBag = true
+		else
+			hasBag = false
+		end
+	end)
+end
 
 RegisterNetEvent('esx:setJob')
 AddEventHandler('esx:setJob', function(job)
@@ -32,22 +45,23 @@ function checkHolsters()
 
 	Citizen.CreateThread(function()
 		while true do
-			Citizen.Wait(10)
+			Citizen.Wait(100)
 			local ped = PlayerPedId()
-			
-			if not hasBag then
+			if not hasBag and not IsPedInAnyVehicle(ped, false) then
 				for wep_hash, wep_name in pairs(Config.Weapons) do
-					if wep_hash ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not attached_weapons[wep_name] then
+					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) then
+						if attached_weapons ~= nil then
+							DeleteObject(attached_weapons.handle)
+							attached_weapons = nil
+						end
 						AttachWeapon(wep_name, wep_hash, Config.AtWeap.back_bone, Config.AtWeap.x, Config.AtWeap.y, Config.AtWeap.z, Config.AtWeap.x_rotation, Config.AtWeap.y_rotation, Config.AtWeap.z_rotation, isMeleeWeapon(wep_name))
 					end
 				end
 			end
 			
-			for name, attached_object in pairs(attached_weapons) do
-				if hasBag or GetSelectedPedWeapon(ped) ==  attached_object.hash or not HasPedGotWeapon(ped, attached_object.hash, false) then -- equipped or not in weapon wheel
-					DeleteObject(attached_object.handle)
-					attached_weapons[name] = nil
-				end
+			if attached_weapons ~= nil and (hasBag or GetSelectedPedWeapon(ped) ==  attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
+				DeleteObject(attached_weapons.handle)
+				attached_weapons = nil
 			end
 			
 			if not IsPedInAnyVehicle(ped, false) then
@@ -59,12 +73,24 @@ function checkHolsters()
 							blocked   = true
 							disableActions()
 							if weapon == "light" then
+								RequestAnimDict("reaction@intimidation@1h")
+
+								while not HasAnimDictLoaded("reaction@intimidation@1h") do
+									Citizen.Wait(100)
+								end
+								
 								loadAnimDict("reaction@intimidation@1h")
 								TaskPlayAnim(ped, "reaction@intimidation@1h", "intro", 5.0, 1.0, -1, 50, 0, 0, 0, 0 )
 								Citizen.Wait(2000)
 								ClearPedTasks(ped)
 								holstered = false
 							else
+								RequestAnimDict("anim@heists@ornate_bank@grab_cash")
+
+								while not HasAnimDictLoaded("anim@heists@ornate_bank@grab_cash") do
+									Citizen.Wait(100)
+								end
+								
 								loadAnimDict("anim@heists@ornate_bank@grab_cash")
 								TaskPlayAnim(ped, "anim@heists@ornate_bank@grab_cash", "intro", 8.0, 2.0, -1, 48, 10, 0, 0, 0) -- Change 50 to 30 if you want to stand still when removing weapon
 								Citizen.Wait(2500)
@@ -79,6 +105,12 @@ function checkHolsters()
 					else
 						if not holstered then
 							if lastWeapon ~= "light" then
+								RequestAnimDict("anim@heists@ornate_bank@grab_cash")
+
+								while not HasAnimDictLoaded("anim@heists@ornate_bank@grab_cash") do
+									Citizen.Wait(100)
+								end
+								
 								BlockWheel = true
 								disableActions()
 								loadAnimDict("anim@heists@ornate_bank@grab_cash")
@@ -88,6 +120,12 @@ function checkHolsters()
 								holstered = true
 								BlockWheel = false
 							else
+								RequestAnimDict("reaction@intimidation@1h")
+
+								while not HasAnimDictLoaded("reaction@intimidation@1h") do
+									Citizen.Wait(100)
+								end
+								
 								BlockWheel = true
 								disableActions()
 								loadAnimDict("reaction@intimidation@1h")
@@ -104,6 +142,8 @@ function checkHolsters()
 				end
 			else
 				holstered = true
+				DeleteObject(attached_weapons.handle)
+				attached_weapons = nil
 			end
 		end
 	end)
@@ -124,6 +164,17 @@ function disableActions()
 	end)
 end
 
+RegisterNetEvent('esx_skin:saved')
+AddEventHandler('esx_skin:saved', function(skin)
+	CheckPlayerHasBag()
+end)
+
+RegisterNetEvent('skinchanger:loadClothes')
+AddEventHandler('skinchanger:loadClothes', function(playerSkin, clothesSkin)
+	CheckPlayerHasBag()
+end)
+
+--[[
 Citizen.CreateThread(function()
 	while true do
 		TriggerEvent('skinchanger:getSkin', function(skin)
@@ -134,9 +185,10 @@ Citizen.CreateThread(function()
 			end
 		end)
 			
-		Citizen.Wait(15000)
+		Citizen.Wait(10000)
 	end
 end)
+]]--
 
 function CheckWeapon(ped)
 	if IsEntityDead(ped) then
@@ -158,12 +210,11 @@ end
 function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, isMelee)
 	local bone = GetPedBoneIndex(GetPlayerPed(-1), boneNumber)
 	RequestModel(attachModel)
-	
 	while not HasModelLoaded(attachModel) do
 		Wait(100)
 	end
 
-  attached_weapons[attachModel] = {
+  attached_weapons = {
     hash = modelHash,
     handle = CreateObject(GetHashKey(attachModel), 1.0, 1.0, 1.0, true, true, false)
   }
@@ -171,7 +222,7 @@ function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, i
   if isMelee then x = 0.11 y = -0.14 z = 0.0 xR = -75.0 yR = 185.0 zR = 92.0 end -- reposition for melee items
   if attachModel == "prop_ld_jerrycan_01" then x = x + 0.3 end
 
-  AttachEntityToEntity(attached_weapons[attachModel].handle, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, 0, 2, 1)
+  AttachEntityToEntity(attached_weapons.handle, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, 0, 2, 1)
 end
 
 function isMeleeWeapon(wep_name)
