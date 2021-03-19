@@ -40,7 +40,39 @@ Config.Weapons = {
 }
 
 Config.ColorsWeapons = {
+    -- Pistols
+    [GetHashKey("WEAPON_PISTOL") .. "_4"] = "w_pi_pistol_luxe",
+    [GetHashKey("WEAPON_PISTOL_MK2") .. "_4"] = "w_pi_pistol_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_COMBATPISTOL") .. "_4"] = "w_pi_combatpistol_luxe",
+    [GetHashKey("WEAPON_PISTOL50") .. "_4"] = "w_pi_pistol50_luxe",
+    [GetHashKey("WEAPON_SNSPISTOL") .. "_4"] = "w_pi_sns_pistol_luxe",
+    [GetHashKey("WEAPON_SNSPISTOL_MK2") .. "_4"] = "w_pi_sns_pistol_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_HEAVYPISTOL") .. "_4"] = "w_pi_heavypistol_luxe",
+    [GetHashKey("WEAPON_APPISTOL") .. "_4"] = "w_pi_appistol_luxe",
+    -- SMGs
+    [GetHashKey("WEAPON_MICROSMG") .. "_4"] = "w_sb_microsmg_luxe",
+    [GetHashKey("WEAPON_MINISMG") .. "_4"] = "w_sb_microsmg_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_SMG") .. "_4"] = "w_sb_smg_luxe",
+    [GetHashKey("WEAPON_SMG_MK2") .. "_4"] = "w_sb_smg_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_ASSAULTSMG") .. "_4"] = "w_sb_assaultsmg_luxe",
+    --[GetHashKey("WEAPON_COMBATPDW") .. "_4"] = "w_ar_assaultrifle_luxe", -- peyda nkrdm
+    -- Shotguns
+    [GetHashKey("WEAPON_PUMPSHOTGUN") .. "_4"] = "w_sg_pumpshotgun_luxe",
+    -- Assault Rifles
     [GetHashKey("WEAPON_ASSAULTRIFLE") .. "_4"] = "w_ar_assaultrifle_luxe",
+    [GetHashKey("WEAPON_ASSAULTRIFLE_MK2") .. "_4"] = "w_ar_assaultrifle_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_CARBINERIFLE") .. "_4"] = "w_ar_carbinerifle_luxe",
+    [GetHashKey("WEAPON_CARBINERIFLE_MK2") .. "_4"] = "w_ar_carbinerifle_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_ADVANCEDRIFLE") .. "_4"] = "w_ar_advancedrifle_luxe",
+    [GetHashKey("WEAPON_SPECIALCARBINE") .. "_4"] = "w_ar_specialcarbine_luxe",
+    [GetHashKey("WEAPON_SPECIALCARBINE_MK2") .. "_4"] = "w_ar_specialcarbine_luxe", -- peyda nkrdm
+    [GetHashKey("WEAPON_BULLPUPRIFLE") .. "_4"] = "w_ar_bullpuprifle_luxe",
+    [GetHashKey("WEAPON_BULLPUPRIFLE_MK2") .. "_4"] = "w_ar_bullpuprifle_luxe", -- peyda nkrdm
+    --[GetHashKey("WEAPON_COMPACTRIFLE") .. "_4"] = "w_ar_assaultrifle_luxe", -- peyda nkrdm
+    -- LMGs
+    --[GetHashKey("WEAPON_GUSENBERG") .. "_4"] = "w_ar_assaultrifle_luxe", -- peyda nkrdm
+    -- Snipers
+    [GetHashKey("WEAPON_SNIPERRIFLE") .. "_4"] = "w_sr_sniperrifle_luxe",
 }
 
 Config.AtWeap = {
