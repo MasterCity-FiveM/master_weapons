@@ -18,9 +18,10 @@ Citizen.CreateThread(function()
 	end
 
 	PlayerData = ESX.GetPlayerData()
-	checkHolsters()
 	CheckPlayerHasBag()
-	Citizen.Wait(60000)
+	Citizen.Wait(20000)
+	checkHolsters()
+	Citizen.Wait(40000)
 	CheckPlayerHasBag()
 end)
 
