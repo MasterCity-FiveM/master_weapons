@@ -40,6 +40,12 @@ AddEventHandler('esx:setJob', function(job)
 	PlayerData.job = job
 end)
 
+RegisterNetEvent('holstersweapon:ForceStop')
+AddEventHandler('holstersweapon:ForceStop', function()
+	blocked = false
+	BlockWheel = false
+end)
+
 function checkHolsters()
 	while not PlayerData.job do
 		Wait(50)
