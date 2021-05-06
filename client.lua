@@ -25,11 +25,10 @@ Citizen.CreateThread(function()
 	loadBag()
 end)
 
-local LastBag = 0
-local LastBagColor = 0
-local showbag = nil
+local hasBagDefault = false
 
-RegisterNetEvent('master_weapon:toggleBag')
+
+--[[RegisterNetEvent('master_weapon:toggleBag')
 AddEventHandler('master_weapon:toggleBag', function(id)
 	local playerPed = PlayerPedId()
 	RequestAnimDict("anim@heists@ornate_bank@grab_cash")
@@ -44,94 +43,70 @@ AddEventHandler('master_weapon:toggleBag', function(id)
 	ClearPedTasks(playerPed)
 	
 	loadBag()
+end)]]--
+
+
+RegisterNetEvent('esx_skin:saved')
+AddEventHandler('esx_skin:saved', function(clothesSkin)
+	if clothesSkin ~= nil and clothesSkin.bags_1 ~= nil then
+		if clothesSkin.bags_1 ~= 85 and clothesSkin.bags_1 ~= 86 and clothesSkin.bags_1 ~= 82 and clothesSkin.bags_1 ~= 81 and clothesSkin.bags_1 ~= 45 and clothesSkin.bags_1 ~= 41 and clothesSkin.bags_1 ~= 40 then
+			hasBag = false
+			hasBagDefault = false
+		else
+			hasBag = true
+			hasBagDefault = true
+		end
+	end
 end)
 
 RegisterNetEvent('skinchanger:loadSkin')
-AddEventHandler('skinchanger:loadSkin', function(skin)
-	showbag = nil
-	loadBag()
+AddEventHandler('skinchanger:loadSkin', function(clothesSkin)
+	if clothesSkin ~= nil and clothesSkin.bags_1 ~= nil then
+		if clothesSkin.bags_1 ~= 85 and clothesSkin.bags_1 ~= 86 and clothesSkin.bags_1 ~= 82 and clothesSkin.bags_1 ~= 81 and clothesSkin.bags_1 ~= 45 and clothesSkin.bags_1 ~= 41 and clothesSkin.bags_1 ~= 40 then
+			hasBag = false
+			hasBagDefault = false
+		else
+			hasBag = true
+			hasBagDefault = true
+		end
+	end
+end)
+
+RegisterNetEvent('master_weapons:setBag')
+AddEventHandler('master_weapons:setBag', function(status)
+	hasBag = status
+end)
+
+RegisterNetEvent('master_weapons:resetBag')
+AddEventHandler('master_weapons:resetBag', function()
+	hasBag = hasBagDefault
 end)
 
 RegisterNetEvent('skinchanger:loadClothes')
 AddEventHandler('skinchanger:loadClothes', function(playerSkin, clothesSkin)
 	if clothesSkin ~= nil and clothesSkin.bags_1 ~= nil then
 		if clothesSkin.bags_1 ~= 85 and clothesSkin.bags_1 ~= 86 and clothesSkin.bags_1 ~= 82 and clothesSkin.bags_1 ~= 81 and clothesSkin.bags_1 ~= 45 and clothesSkin.bags_1 ~= 41 and clothesSkin.bags_1 ~= 40 then
-			if LastBag ~= nil and LastBag > 1 then
-				TriggerEvent('skinchanger:change', "bags_1", LastBag)
-			else
-				TriggerEvent('skinchanger:change', "bags_1", 82)
-			end
-			LastBagColor = clothesSkin.bags_2
-			if clothesSkin.bags_2 == nil or clothesSkin.bags_2 == -1 then
-				TriggerEvent('skinchanger:change', "bags_2", 0)
-			end
-			
-			showbag = true
-			hasBag = true
-		else
-			showbag = false
 			hasBag = false
+			hasBagDefault = false
+		else
+			hasBag = true
+			hasBagDefault = true
 		end
 	end
 end)
 
 function loadBag()
-	if showbag == nil then
-		ESX.TriggerServerCallback('esx_skin:getPlayerSkin', function(skin, jobSkin)
-			if skin.bags_1 ~= 85 and skin.bags_1 ~= 86 and skin.bags_1 ~= 82 and skin.bags_1 ~= 81 and skin.bags_1 ~= 45 and skin.bags_1 ~= 41 and skin.bags_1 ~= 40 then
-				if LastBag ~= nil and LastBag > 1 then
-					TriggerEvent('skinchanger:change', "bags_1", LastBag)
-				else
-					TriggerEvent('skinchanger:change', "bags_1", 82)
-				end
-				LastBagColor = skin.bags_2
-				if skin.bags_2 == nil or skin.bags_2 == -1 then
-					TriggerEvent('skinchanger:change', "bags_2", 0)
-				end
-				TriggerEvent('skinchanger:getSkin', function(skin)
-					--TriggerServerEvent('esx_skin:save', skin)
-				end)
-				showbag = true
-				hasBag = true
-			else
-				if skin.bags_1 == 85 or skin.bags_1 == 86 or skin.bags_1 == 82 or skin.bags_1 == 81 or skin.bags_1 == 45 or skin.bags_1 == 41 or skin.bags_1 == 40 then
-					LastBag = skin.bags_1
-				end
-				TriggerEvent('skinchanger:change', "bags_1", 0)
-				--TriggerEvent('skinchanger:change', "bags_2", 0)
-				TriggerEvent('skinchanger:getSkin', function(skin)
-					--TriggerServerEvent('esx_skin:save', skin)
-				end)
-				
-				showbag = false
+	TriggerEvent('skinchanger:getSkin', function(clothesSkin)
+		if clothesSkin ~= nil and clothesSkin.bags_1 ~= nil then
+			if clothesSkin.bags_1 ~= 85 and clothesSkin.bags_1 ~= 86 and clothesSkin.bags_1 ~= 82 and clothesSkin.bags_1 ~= 81 and clothesSkin.bags_1 ~= 45 and clothesSkin.bags_1 ~= 41 and clothesSkin.bags_1 ~= 40 then
 				hasBag = false
-			end
-		end)
-	else
-		if showbag == true then
-			TriggerEvent('skinchanger:change', "bags_1", 0)
-			TriggerEvent('skinchanger:getSkin', function(skin)
-			end)
-			
-			showbag = false
-			hasBag = false
-		else
-			if LastBag ~= nil and LastBag > 1 then
-				TriggerEvent('skinchanger:change', "bags_1", LastBag)
+				hasBagDefault = false
 			else
-				TriggerEvent('skinchanger:change', "bags_1", 82)
+				hasBag = true
+				hasBagDefault = true
 			end
-			
-			if LastBagColor == nil or LastBagColor == -1 then
-				TriggerEvent('skinchanger:change', "bags_2", 0)
-			end
-			
-			TriggerEvent('skinchanger:getSkin', function(skin)
-			end)
-			showbag = true
-			hasBag = true
-		end	
-	end
+		end
+	end)
 end
 
 RegisterNetEvent('esx:setJob')
@@ -280,18 +255,6 @@ function disableActions()
 		end
 	end)
 end
-
-RegisterNetEvent('esx_skin:saved')
-AddEventHandler('esx_skin:saved', function(skin)
-	showbag = nil
-	loadBag()
-end)
-
-RegisterNetEvent('skinchanger:loadClothes')
-AddEventHandler('skinchanger:loadClothes', function(playerSkin, clothesSkin)
-	showbag = nil
-	loadBag()
-end)
 
 --[[
 Citizen.CreateThread(function()
