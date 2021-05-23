@@ -5,6 +5,7 @@ local PlayerData, attached_weapons = {}, nil
 local lastWeapon
 local blocked, BlockWheel, hasBag, holstered = false, false, false, true
 local lastBackWeapon = 1
+local DisableGuns = false
 ------------------------
 
 Citizen.CreateThread(function()
@@ -114,6 +115,15 @@ AddEventHandler('esx:setJob', function(job)
 	PlayerData.job = job
 end)
 
+RegisterNetEvent('master_weapons:stopguns')
+AddEventHandler('master_weapons:stopguns', function()
+	Citizen.CreateThread(function()
+		DisableGuns = true
+		Citizen.Wait(300000)
+		DisableGuns = false
+	end)
+end)
+
 RegisterNetEvent('holstersweapon:ForceStop')
 AddEventHandler('holstersweapon:ForceStop', function()
 	blocked = false
@@ -129,7 +139,8 @@ function checkHolsters()
 		while true do
 			Citizen.Wait(100)
 			local ped = PlayerPedId()
-			if not hasBag and not IsPedInAnyVehicle(ped, false) then
+			
+			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) then
 				for wep_hash, wep_name in pairs(Config.Weapons) do
 					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) then
 						if lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash then
@@ -147,7 +158,7 @@ function checkHolsters()
 				end
 			end
 			
-			if attached_weapons ~= nil and (hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
+			if attached_weapons ~= nil and (DisableGuns or hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
 				DeleteObject(attached_weapons.handle)
 				attached_weapons = nil
 				lastBackWeapon = 1
@@ -302,16 +313,22 @@ function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, i
 		Wait(100)
 	end
 	
-  attached_weapons = {
-    hash = modelHash,
-    handle = CreateObject(GetHashKey(attachModel), 1.0, 1.0, 1.0, true, true, false)
-  }
+	if attached_weapons ~= nil then
+		DeleteObject(attached_weapons.handle)
+		attached_weapons = nil
+		lastBackWeapon = 1
+	end
+	
+	attached_weapons = {
+		hash = modelHash,
+		handle = CreateObject(GetHashKey(attachModel), 1.0, 1.0, 1.0, true, true, false)
+	}
 
-  lastBackWeapon = modelHash
-  if isMelee then x = 0.11 y = -0.14 z = 0.0 xR = -75.0 yR = 185.0 zR = 92.0 end -- reposition for melee items
-  if attachModel == "prop_ld_jerrycan_01" then x = x + 0.3 end
+	lastBackWeapon = modelHash
+	if isMelee then x = 0.11 y = -0.14 z = 0.0 xR = -75.0 yR = 185.0 zR = 92.0 end -- reposition for melee items
+	if attachModel == "prop_ld_jerrycan_01" then x = x + 0.3 end
 
-  AttachEntityToEntity(attached_weapons.handle, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, 0, 2, 1)
+	AttachEntityToEntity(attached_weapons.handle, GetPlayerPed(-1), bone, x, y, z, xR, yR, zR, 1, 1, 0, 0, 2, 1)
 end
 
 function isMeleeWeapon(wep_name)
