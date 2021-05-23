@@ -119,7 +119,7 @@ RegisterNetEvent('master_weapons:stopguns')
 AddEventHandler('master_weapons:stopguns', function()
 	Citizen.CreateThread(function()
 		DisableGuns = true
-		Citizen.Wait(300000)
+		Citizen.Wait(120000)
 		DisableGuns = false
 	end)
 end)
