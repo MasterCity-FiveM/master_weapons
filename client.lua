@@ -124,6 +124,20 @@ AddEventHandler('master_weapons:stopguns', function()
 	end)
 end)
 
+RegisterNetEvent('master_weapons:setStatus')
+AddEventHandler('master_weapons:setStatus', function(status)
+	DisableGuns = status
+end)
+
+RegisterNetEvent('master_weapons:ResetAll')
+AddEventHandler('master_weapons:ResetAll', function()
+	if attached_weapons ~= nil then
+		DeleteObject(attached_weapons.handle)
+		attached_weapons = nil
+		lastBackWeapon = 1
+	end
+end)
+
 RegisterNetEvent('holstersweapon:ForceStop')
 AddEventHandler('holstersweapon:ForceStop', function()
 	blocked = false
@@ -158,7 +172,7 @@ function checkHolsters()
 				end
 			end
 			
-			if attached_weapons ~= nil and (DisableGuns or hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false)) then
+			if attached_weapons ~= nil and (DisableGuns or hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false) or IsPedInAnyVehicle(ped, false)) then
 				DeleteObject(attached_weapons.handle)
 				attached_weapons = nil
 				lastBackWeapon = 1
