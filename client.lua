@@ -58,6 +58,7 @@ AddEventHandler('esx_skin:saved', function(clothesSkin)
 			hasBagDefault = true
 		end
 	end
+	TriggerEvent('master_weapons:ResetAll')
 end)
 
 RegisterNetEvent('skinchanger:loadSkin')
@@ -71,16 +72,19 @@ AddEventHandler('skinchanger:loadSkin', function(clothesSkin)
 			hasBagDefault = true
 		end
 	end
+	TriggerEvent('master_weapons:ResetAll')
 end)
 
 RegisterNetEvent('master_weapons:setBag')
 AddEventHandler('master_weapons:setBag', function(status)
 	hasBag = status
+	TriggerEvent('master_weapons:ResetAll')
 end)
 
 RegisterNetEvent('master_weapons:resetBag')
 AddEventHandler('master_weapons:resetBag', function()
 	hasBag = hasBagDefault
+	TriggerEvent('master_weapons:ResetAll')
 end)
 
 RegisterNetEvent('skinchanger:loadClothes')
@@ -94,6 +98,7 @@ AddEventHandler('skinchanger:loadClothes', function(playerSkin, clothesSkin)
 			hasBagDefault = true
 		end
 	end
+	TriggerEvent('master_weapons:ResetAll')
 end)
 
 function loadBag()
@@ -107,6 +112,7 @@ function loadBag()
 				hasBagDefault = true
 			end
 		end
+		TriggerEvent('master_weapons:ResetAll')
 	end)
 end
 
@@ -132,6 +138,7 @@ end)
 RegisterNetEvent('master_weapons:ResetAll')
 AddEventHandler('master_weapons:ResetAll', function()
 	if attached_weapons ~= nil then
+		DetachEntity(attached_weapons.handle, 1, true)
 		DeleteObject(attached_weapons.handle)
 		attached_weapons = nil
 		lastBackWeapon = 1
@@ -151,34 +158,34 @@ function checkHolsters()
 
 	Citizen.CreateThread(function()
 		while true do
-			Citizen.Wait(100)
-			local ped = PlayerPedId()
+			Citizen.Wait(1)
+			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
 			
-			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) then
 				for wep_hash, wep_name in pairs(Config.Weapons) do
-					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) then
-						if lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash then
-							break
-						end
+					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not (lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash) then
 						
 						if attached_weapons ~= nil then
+							DetachEntity(attached_weapons.handle, 1, true)
 							DeleteObject(attached_weapons.handle)
 							attached_weapons = nil
 							lastBackWeapon = 1
+							Citizen.Wait(100)
 						end
+						
 						AttachWeapon(wep_name, wep_hash, Config.AtWeap.back_bone, Config.AtWeap.x, Config.AtWeap.y, Config.AtWeap.z, Config.AtWeap.x_rotation, Config.AtWeap.y_rotation, Config.AtWeap.z_rotation, isMeleeWeapon(wep_name))
 						break
 					end
 				end
 			end
 			
-			if attached_weapons ~= nil and (DisableGuns or hasBag or GetSelectedPedWeapon(ped) == attached_weapons.hash or not HasPedGotWeapon(ped, attached_weapons.hash, false) or IsPedInAnyVehicle(ped, false)) then
+			if attached_weapons ~= nil and (IsPedInAnyVehicle(ped, false) or GetVehiclePedIsTryingToEnter(ped) ~= 0 or IsPedInParachuteFreeFall(ped) or DisableGuns or hasBag or not HasPedGotWeapon(ped, attached_weapons.hash, false) or GetSelectedPedWeapon(ped) == attached_weapons.hash) then
+				DetachEntity(attached_weapons.handle, 1, true)
 				DeleteObject(attached_weapons.handle)
 				attached_weapons = nil
 				lastBackWeapon = 1
 			end
 			
-			if not IsPedInAnyVehicle(ped, false) then
+			if not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
 				if GetVehiclePedIsTryingToEnter(ped) == 0 and not IsPedInParachuteFreeFall(ped) then
 					local weapon = CheckWeapon(ped)
 					if weapon then
@@ -257,6 +264,7 @@ function checkHolsters()
 			else
 				holstered = true
 				if attached_weapons ~= nil then
+					DetachEntity(attached_weapons.handle, 1, true)
 					DeleteObject(attached_weapons.handle)
 				end
 				attached_weapons = nil
@@ -328,9 +336,11 @@ function AttachWeapon(attachModel, modelHash, boneNumber, x, y, z, xR, yR, zR, i
 	end
 	
 	if attached_weapons ~= nil then
+		DetachEntity(attached_weapons.handle, 1, true)
 		DeleteObject(attached_weapons.handle)
 		attached_weapons = nil
 		lastBackWeapon = 1
+		Citizen.Wait(50)
 	end
 	
 	attached_weapons = {
