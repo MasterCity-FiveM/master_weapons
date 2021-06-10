@@ -159,6 +159,7 @@ function checkHolsters()
 	Citizen.CreateThread(function()
 		while true do
 			Citizen.Wait(1)
+			local ped = PlayerPedId()
 			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
 			
 				for wep_hash, wep_name in pairs(Config.Weapons) do
@@ -185,7 +186,7 @@ function checkHolsters()
 				lastBackWeapon = 1
 			end
 			
-			if not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
+			if not IsPedInAnyVehicle(ped, false) then
 				if GetVehiclePedIsTryingToEnter(ped) == 0 and not IsPedInParachuteFreeFall(ped) then
 					local weapon = CheckWeapon(ped)
 					if weapon then
@@ -278,6 +279,7 @@ function disableActions()
 	Citizen.CreateThread(function()
 		while blocked or BlockWheel do
 			Citizen.Wait(5)
+			local ped = PlayerPedId()
 			DisableControlAction(1, 25, true)
 			DisableControlAction(1, 140, true)
 			DisableControlAction(1, 141, true)
