@@ -158,10 +158,9 @@ function checkHolsters()
 
 	Citizen.CreateThread(function()
 		while true do
-			Citizen.Wait(1)
+			Citizen.Wait(50)
 			local ped = PlayerPedId()
 			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
-			
 				for wep_hash, wep_name in pairs(Config.Weapons) do
 					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not (lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash) then
 						
