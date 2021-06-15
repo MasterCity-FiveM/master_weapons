@@ -160,18 +160,9 @@ function checkHolsters()
 		while true do
 			Citizen.Wait(50)
 			local ped = PlayerPedId()
-			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 then
+			if not DisableGuns and not hasBag and not IsPedInAnyVehicle(ped, false) and GetVehiclePedIsTryingToEnter(ped) == 0 and attached_weapons == nil then
 				for wep_hash, wep_name in pairs(Config.Weapons) do
-					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not (lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash) then
-						
-						if attached_weapons ~= nil then
-							DetachEntity(attached_weapons.handle, 1, true)
-							DeleteObject(attached_weapons.handle)
-							attached_weapons = nil
-							lastBackWeapon = 1
-							Citizen.Wait(100)
-						end
-						
+					if wep_name ~= 'light' and HasPedGotWeapon(ped, wep_hash, false) and not (lastBackWeapon == wep_hash or GetSelectedPedWeapon(ped) == wep_hash) then					
 						AttachWeapon(wep_name, wep_hash, Config.AtWeap.back_bone, Config.AtWeap.x, Config.AtWeap.y, Config.AtWeap.z, Config.AtWeap.x_rotation, Config.AtWeap.y_rotation, Config.AtWeap.z_rotation, isMeleeWeapon(wep_name))
 						break
 					end
